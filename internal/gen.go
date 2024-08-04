@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"sort"
 
 	//"errors"
 	//"fmt"
@@ -21,9 +22,24 @@ import (
 
 
 type tmplCtx struct {
-	Q string
+	Package string
+	Structs []Struct
 	SqlcVersion string
 	SourceName string
+}
+
+type Struct struct {
+	Table *plugin.Identifier
+	Name string
+	Fields []Field
+	Comment string
+}
+
+type Field struct {
+	Name string // TODO: CamelCase ? snaked-case?
+	DBName string // Name as used in the DB
+	Type string
+	Comment string
 }
 
 func Generate(ctx context.Context, req *plugin.GenerateRequest) (*plugin.GenerateResponse, error) {
@@ -36,15 +52,18 @@ func Generate(ctx context.Context, req *plugin.GenerateRequest) (*plugin.Generat
 		return nil, err
 	}
 
-	return generate(req, options)
+	structs := buildStructs(req, options)
+
+	return generate(req, options, structs)
 }
 
 
-func generate(req *plugin.GenerateRequest, options *opts.Options) (*plugin.GenerateResponse, error) {
+func generate(req *plugin.GenerateRequest, options *opts.Options, structs []Struct) (*plugin.GenerateResponse, error) {
 
 	tctx := tmplCtx{
-		Q: "`",
+		Package: options.Package,
 		SqlcVersion: req.SqlcVersion,
+		Structs: structs,
 	}
 
 	funcMap := template.FuncMap{
@@ -103,3 +122,50 @@ func generate(req *plugin.GenerateRequest, options *opts.Options) (*plugin.Gener
 	return &resp, nil
 }
 
+func buildStructs(req *plugin.GenerateRequest, options *opts.Options) []Struct {
+	var structs []Struct
+	for _, schema := range req.Catalog.Schemas {
+		if schema.Name == "pg_catalog" || schema.Name == "information_schema" {
+			continue
+		}
+		for _, table := range schema.Tables {
+			var tableName string
+			if schema.Name == req.Catalog.DefaultSchema {
+				tableName = table.Rel.Name
+			} else {
+				tableName = schema.Name + "_" + table.Rel.Name
+			}
+
+			s := Struct{
+				Table:   &plugin.Identifier{Schema: schema.Name, Name: table.Rel.Name},
+				Name:    structName(tableName, options),
+				Comment: table.Comment,
+			}
+			for _, column := range table.Columns {
+				s.Fields = append(s.Fields, Field{
+					Name:    fieldName(column.Name, options),
+					Type:    perlType(req, options, column),
+					Comment: column.Comment,
+				})
+			}
+			structs = append(structs, s)
+		}
+	}
+	if len(structs) > 0 {
+		sort.Slice(structs, func(i, j int) bool { return structs[i].Name < structs[j].Name })
+	}
+	return structs
+}
+
+func structName(name string, options *opts.Options) string {
+	return sdk.LowerTitle(name)
+}
+
+func fieldName(name string, options *opts.Options) string {
+	return sdk.LowerTitle(name)
+}
+
+func perlType(req *plugin.GenerateRequest, options *opts.Options, column *plugin.Column) string {
+	// TODO: implement
+	return "Str"
+}
