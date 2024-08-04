@@ -1,0 +1,13 @@
+version: '2'
+plugins:
+- name: perl
+  wasm:
+    url: TODO
+    sha256: TODO
+sql:
+- schema: schema.sql
+  queries: query.sql
+  engine: postgresql
+  codegen:
+  - plugin: perl
+    out: perl
