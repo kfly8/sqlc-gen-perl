@@ -23,7 +23,7 @@ import (
 
 
 type tmplCtx struct {
-	Package string
+	ModelPackage string
 	Structs []Struct
 	SqlcVersion string
 	SourceName string
@@ -61,8 +61,13 @@ func Generate(ctx context.Context, req *plugin.GenerateRequest) (*plugin.Generat
 
 func generate(req *plugin.GenerateRequest, options *opts.Options, structs []Struct) (*plugin.GenerateResponse, error) {
 
+	modelPackage := "Models"
+	if options.ModelPackage != "" {
+		modelPackage = options.ModelPackage
+	}
+
 	tctx := tmplCtx{
-		Package: options.Package,
+		ModelPackage: modelPackage,
 		SqlcVersion: req.SqlcVersion,
 		Structs: structs,
 	}

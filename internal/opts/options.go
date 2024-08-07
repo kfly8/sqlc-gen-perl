@@ -10,7 +10,7 @@ import (
 )
 
 type Options struct {
-	Package                     string            `json:"package" yaml:"package"`
+	ModelPackage                string            `json:"model_package" yaml:"model_package"`
 	Rename                      map[string]string `json:"rename,omitempty" yaml:"rename"`
 	OutputModelsFileName        string            `json:"output_models_file_name,omitempty" yaml:"output_models_file_name"`
 }
