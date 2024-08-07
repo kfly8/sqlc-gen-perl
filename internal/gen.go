@@ -185,7 +185,10 @@ func structName(name string, options *opts.Options) string {
 }
 
 func fieldName(name string, options *opts.Options) string {
-	return structName(name, options)
+	if rename := options.Rename[name]; rename != "" {
+		return rename
+	}
+	return name;
 }
 
 func perlType(req *plugin.GenerateRequest, options *opts.Options, column *plugin.Column) string {
