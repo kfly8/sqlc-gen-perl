@@ -23,7 +23,8 @@ import (
 
 
 type tmplCtx struct {
-	ModelPackage string
+	ModelsPackage string
+	QuerierPackage string
 	Structs []Struct
 	SqlcVersion string
 }
@@ -60,13 +61,19 @@ func Generate(ctx context.Context, req *plugin.GenerateRequest) (*plugin.Generat
 
 func generate(req *plugin.GenerateRequest, options *opts.Options, structs []Struct) (*plugin.GenerateResponse, error) {
 
-	modelPackage := "Models"
-	if options.ModelPackage != "" {
-		modelPackage = options.ModelPackage
+	modelsPackage := "Models"
+	if options.ModelsPackage != "" {
+		modelsPackage = options.ModelsPackage
+	}
+
+	querierPackage := "Querier"
+	if options.ModelsPackage != "" {
+		querierPackage = options.QuerierPackage
 	}
 
 	tctx := tmplCtx{
-		ModelPackage: modelPackage,
+		ModelsPackage: modelsPackage,
+		QuerierPackage: querierPackage,
 		SqlcVersion: req.SqlcVersion,
 		Structs: structs,
 	}
@@ -111,6 +118,14 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, structs []Stru
 		modelsFileName = options.OutputModelsFileName
 	}
 	if err := execute(modelsFileName, "modelsFile"); err != nil {
+		return nil, err
+	}
+
+	querierFileName := "Querier.pm"
+	if options.OutputQuerierFileName != "" {
+		querierFileName = options.OutputQuerierFileName
+	}
+	if err := execute(querierFileName, "querierFile"); err != nil {
 		return nil, err
 	}
 

@@ -10,9 +10,11 @@ import (
 )
 
 type Options struct {
-	ModelPackage                string            `json:"model_package" yaml:"model_package"`
+	ModelsPackage                string            `json:"models_package" yaml:"models_package"`
+	QuerierPackage                string            `json:"querier_package" yaml:"querier_package"`
 	Rename                      map[string]string `json:"rename,omitempty" yaml:"rename"`
 	OutputModelsFileName        string            `json:"output_models_file_name,omitempty" yaml:"output_models_file_name"`
+	OutputQuerierFileName        string            `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
 }
 
 func Parse(req *plugin.GenerateRequest) (*Options, error) {
