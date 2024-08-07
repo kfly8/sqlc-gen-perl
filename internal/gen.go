@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"sort"
+	"unicode"
 
 	//"errors"
 	//"fmt"
@@ -158,11 +159,33 @@ func buildStructs(req *plugin.GenerateRequest, options *opts.Options) []Struct {
 }
 
 func structName(name string, options *opts.Options) string {
-	return sdk.LowerTitle(name)
+	if rename := options.Rename[name]; rename != "" {
+		return rename
+	}
+	out := ""
+	name = strings.Map(func(r rune) rune {
+		if unicode.IsLetter(r) {
+			return r
+		}
+		if unicode.IsDigit(r) {
+			return r
+		}
+		return rune('_')
+	}, name)
+
+	for _, p := range strings.Split(name, "_") {
+		if p == "id" {
+			out += "ID"
+		} else {
+			out += strings.Title(p)
+		}
+	}
+
+	return out;
 }
 
 func fieldName(name string, options *opts.Options) string {
-	return sdk.LowerTitle(name)
+	return structName(name, options)
 }
 
 func perlType(req *plugin.GenerateRequest, options *opts.Options, column *plugin.Column) string {
