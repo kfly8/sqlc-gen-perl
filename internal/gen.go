@@ -26,7 +26,6 @@ type tmplCtx struct {
 	ModelPackage string
 	Structs []Struct
 	SqlcVersion string
-	SourceName string
 }
 
 type Struct struct {
@@ -93,7 +92,6 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, structs []Stru
 	execute := func(name, templateName string) error {
 		var b bytes.Buffer
 		w := bufio.NewWriter(&b)
-		tctx.SourceName = name
 		err := tmpl.ExecuteTemplate(w, templateName, &tctx)
 		w.Flush()
 		if err != nil {
