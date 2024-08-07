@@ -15,11 +15,11 @@ use Types::Standard -types;
 
 {{- define "modelsCode" -}}
 {{- range .Structs -}}
-{{if .Comment}}{comment .Comment}{{end}}
+{{- if .Comment}}{comment .Comment}{{end -}}
 use kote {{.Name}} => Dict[ {{- range .Fields}}
   {{- if .Comment}}{{comment .Comment}}{{end}}
   {{.Name}} => {{.Type}},
   {{- end}}
 ];
-{{end}}
+{{- end -}}
 {{end}}
